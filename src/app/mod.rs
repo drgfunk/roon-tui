@@ -549,6 +549,8 @@ impl App {
                 }
                 KeyModifiers::SHIFT => {
                     match key.code {
+                        KeyCode::Right => self.to_roon.send(IoEvent::Control(Control::Next)).await.unwrap(),
+                        KeyCode::Left => self.to_roon.send(IoEvent::Control(Control::Previous)).await.unwrap(),
                         KeyCode::BackTab => {
                             self.input.clear();
                             self.browse_match_list.clear();
