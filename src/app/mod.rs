@@ -534,6 +534,21 @@ impl App {
             match key.modifiers {
                 KeyModifiers::NONE => {
                     match key.code {
+                        KeyCode::Char('.') => self
+                            .to_roon
+                            .send(IoEvent::Control(Control::Next))
+                            .await
+                            .unwrap(),
+                        KeyCode::Char(',') => self
+                            .to_roon
+                            .send(IoEvent::Control(Control::Previous))
+                            .await
+                            .unwrap(),
+                        KeyCode::Char(' ') => self
+                            .to_roon
+                            .send(IoEvent::Control(Control::PlayPause))
+                            .await
+                            .unwrap(),
                         KeyCode::Char('?') => {
                             if selected_view != Some(View::Help) {
                                 match selected_view {
@@ -740,7 +755,7 @@ impl App {
                 .send(IoEvent::Mute(volume::Mute::Unmute))
                 .await
                 .unwrap(),
-            KeyCode::Char('+') => self.to_roon.send(IoEvent::ChangeVolume(1)).await.unwrap(),
+            KeyCode::Char('+') | KeyCode::Char('=') => self.to_roon.send(IoEvent::ChangeVolume(1)).await.unwrap(),
             KeyCode::Char('-') => self.to_roon.send(IoEvent::ChangeVolume(-1)).await.unwrap(),
             KeyCode::Char('r') => self.to_roon.send(IoEvent::Repeat).await.unwrap(),
             KeyCode::Char('s') => self.to_roon.send(IoEvent::Shuffle).await.unwrap(),
@@ -752,6 +767,8 @@ impl App {
         match key.code {
             KeyCode::Up => self.queue.prev(),
             KeyCode::Down => self.queue.next(),
+            KeyCode::Char('j') => self.queue.next(),
+            KeyCode::Char('k') => self.queue.prev(),
             KeyCode::Home => self.queue.select_first(),
             KeyCode::End => self.queue.select_last(),
             KeyCode::PageUp => self.queue.select_prev_page(),
