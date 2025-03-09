@@ -9,7 +9,6 @@ use ratatui::{
     Frame,
 };
 use roon_api::transport::{volume::Scale, Repeat, State, Zone};
-use std::collections::HashMap;
 
 use crate::{
     app::{App, View},
@@ -86,7 +85,7 @@ mod theme {
         // Create a new ThemeColors with default values
         pub fn default() -> Self {
             let mut colors = HashMap::new();
-            colors.insert("THEME_BG".to_string(), "#191724".to_string());
+            colors.insert("THEME_BG".to_string(), Color::Reset.to_string());
             colors.insert("THEME_TITLE_FG".to_string(), "#9ccfd8".to_string());
             // Add other defaults as needed...
 
@@ -119,7 +118,7 @@ mod theme {
 
 use self::theme::ThemeColors;
 
-const ROON_BRAND_COLOR: Color = Color::Rgb(0xc4, 0xa7, 0xe7);
+const ROON_BRAND_COLOR: Color = Color::Rgb(0x75, 0x75, 0xf3);
 const CUSTOM_GRAY: Color = Color::Rgb(0x80, 0x80, 0x80);
 const UNI_HIGHLIGHT_SYMBOL: &str = " \u{23f5} ";
 const UNI_CHECKED_SYMBOL: &str = "\u{1F5F9}";
@@ -128,29 +127,11 @@ const HIGHLIGHT_SYMBOL: &str = " > ";
 const CHECKED_SYMBOL: &str = "+";
 const UNCHECKED_SYMBOL: &str = "-";
 
-const ROSE_PINE_BASE: Color = Color::Rgb(0x19, 0x17, 0x24);
-const ROSE_PINE_OVERLAY: Color = Color::Rgb(0x26, 0x23, 0x3A); // #26233a
-const ROSE_PINE_SURFACE: Color = Color::Rgb(0x1F, 0x1D, 0x2E);
-const ROSE_PINE_HIGHLIGHT_MEDIUM: Color = Color::Rgb(0x40, 0x3D, 0x52);
-const ROSE_PINE_HIGHLIGHT_HIGH: Color = Color::Rgb(0x52, 0x4f, 0x67); // #524f67
-const ROSE_PINE_LOVE_BG: Color = Color::Rgb(0x2E, 0x20, 0x2F);
-const ROSE_PINE_LOVE: Color = Color::Rgb(0xeb, 0x6f, 0x92);
-const ROSE_PINE_TEXT: Color = Color::Rgb(0xE0, 0xDE, 0xF4); // 0xE0DEF4
-const ROSE_PINE_SUBTLE: Color = Color::Rgb(0x90, 0x8C, 0xAA);
-const ROSE_PINE_MUTED: Color = Color::Rgb(0x6E, 0x6A, 0x86); // #6e6a86
-const ROSE_PINE_ROSE: Color = Color::Rgb(0xeb, 0xbc, 0xba); // #ebbcba
-const ROSE_PINE_ROSE_BG: Color = Color::Rgb(0x2E, 0x29, 0x34); // 2E2934
-const ROSE_PINE_IRIS: Color = Color::Rgb(0xc4, 0xa7, 0xe7); // #c4a7e7
-const ROSE_PINE_IRIS_BG: Color = Color::Rgb(0x2A, 0x27, 0x39); // 2A2738
-const ROSE_PINE_FOAM: Color = Color::Rgb(0x9c, 0xcf, 0xd8); // #9ccfd8
-const ROSE_PINE_FOAM_BG: Color = Color::Rgb(0x2c, 0x30, 0x3f); // #2C303F
-
 lazy_static::lazy_static! {
     static ref THEME: ThemeColors = ThemeColors::load();
 }
 
 // helper function to get color from theme, should take a key and return a color or a default
-// THEME.get_color("THEME_BG").unwrap_or(ROSE_PINE_BASE)
 fn get_theme_color(key: &str, default: Color) -> Color {
     THEME.get_color(key).unwrap_or(default)
 }
@@ -168,14 +149,14 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
     };
     let hint = Title::from(Span::styled(
         " Ctrl-h for Help ",
-        Style::default().fg(get_theme_color("THEME_HINT_FG", ROSE_PINE_MUTED)),
+        Style::default().fg(get_theme_color("THEME_HINT_FG", CUSTOM_GRAY)),
     ))
     .position(Position::Bottom)
     .alignment(Alignment::Center);
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(app, None))
-        .style(Style::default().bg(get_theme_color("THEME_BG", ROSE_PINE_BASE))) // Apply background color to main block;
+        .border_style(get_border_view_style(app, None, "THEME_BORDER", ""))
+        .style(Style::default().bg(get_theme_color("THEME_BG", Color::Reset))) // Apply background color to main block;
         .title(Span::styled(title, get_text_view_style(app, None)))
         .title(Span::styled(subtitle, get_text_view_style(app, None)))
         .title(hint)
@@ -218,9 +199,14 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Browse);
     let mut block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view))
+        .border_style(get_border_view_style(
+            &app,
+            view,
+            "THEME_BROWSE_BORDER",
+            "THEME_BROWSE_BORDER_SELECTED",
+        ))
         .title(Span::styled(browse_title, get_browse_title_style(&app)))
-        .style(Style::default().bg(get_theme_color("THEME_BROWSE_BG", ROSE_PINE_BASE))); // Apply background color to main block;
+        .style(Style::default().bg(get_theme_color("THEME_BROWSE_BG", Color::Reset))); // Apply background color to main block;
 
     app.browse.prepare_paging(
         page_lines,
@@ -283,7 +269,7 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
                 block = block.title(
                     Title::from(Span::styled(
                         progress,
-                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", ROSE_PINE_MUTED)),
+                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
                     )) // meta
                     .alignment(Alignment::Right),
                 );
@@ -306,21 +292,29 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
 
 fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
     // Define a background color for the now playing view
-    let background_color = get_theme_color("THEME_QUEUE_BG", ROSE_PINE_SURFACE); // Dark blue-purple background
+    let background_color = get_theme_color("THEME_QUEUE_BG", Color::Reset); // Dark blue-purple background
 
     let page_lines = area.height.saturating_sub(2) as usize; // Exclude border
     let view = Some(&View::Queue);
     let mut block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view).fg(ROSE_PINE_SURFACE))
+        .border_style(get_border_view_style(
+            &app,
+            view,
+            "THEME_QUEUE_BORDER",
+            "THEME_QUEUE_BORDER_SELECTED",
+        ))
         .title(Span::styled(" Queue ", get_queue_title_style(&app)))
         .title_alignment(Alignment::Right)
         .style(Style::default().bg(background_color)); // Apply background color to main block;
 
     if let Some(queue_mode) = app.queue_mode {
         block = block.title(
-            Title::from(Span::styled(queue_mode, Style::default().fg(Color::Reset)))
-                .position(Position::Bottom),
+            Title::from(Span::styled(
+                queue_mode,
+                Style::default().fg(get_theme_color("THEME_TEXT_FG", CUSTOM_GRAY)),
+            ))
+            .position(Position::Bottom),
         );
     }
 
@@ -336,11 +330,11 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
         let item_len = area.width.saturating_sub(6) as usize;
         let secondary_style = if app.get_selected_view() == view {
             Style::default()
-                .fg(get_theme_color("THEME_TEXT_FG_SELECTED", ROSE_PINE_TEXT))
+                .fg(get_theme_color("THEME_TEXT_FG_SELECTED", Color::Reset))
                 .add_modifier(Modifier::ITALIC)
         } else {
             Style::default()
-                .fg(get_theme_color("THEME_TEXT_FG", ROSE_PINE_SUBTLE))
+                .fg(get_theme_color("THEME_TEXT_FG", CUSTOM_GRAY))
                 .add_modifier(Modifier::ITALIC)
         };
         let items: Vec<ListItem> = queue_items
@@ -396,7 +390,7 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
                 block = block.title(
                     Title::from(Span::styled(
                         progress,
-                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", ROSE_PINE_MUTED)),
+                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
                     ))
                     .alignment(Alignment::Left),
                 );
@@ -406,7 +400,7 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
                 block = block.title(
                     Title::from(Span::styled(
                         queue_time_remaining,
-                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", ROSE_PINE_MUTED)),
+                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
                     ))
                     .alignment(Alignment::Left),
                 );
@@ -419,14 +413,16 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
 
 fn draw_now_playing_view(frame: &mut Frame, area: Rect, app: &App) {
     let view = Some(&View::NowPlaying);
-    let background_color = get_theme_color("THEME_NOW_PLAYING_BG", ROSE_PINE_OVERLAY); // Dark blue-purple background
+    let background_color = get_theme_color("THEME_NOW_PLAYING_BG", Color::Reset); // Dark blue-purple background
 
     let mut block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(app, view).fg(get_theme_color(
+        .border_style(get_border_view_style(
+            app,
+            view,
             "THEME_NOW_PLAYING_BORDER",
-            ROSE_PINE_OVERLAY,
-        )))
+            "THEME_NOW_PLAYING_BORDER_SELECTED",
+        ))
         .title_position(block::Position::Top)
         .padding(Padding {
             left: 1,
@@ -450,9 +446,9 @@ fn draw_now_playing_view(frame: &mut Frame, area: Rect, app: &App) {
 
         // Adjust text style to ensure readability on the new background
         let style = if app.get_selected_view() == view {
-            Style::default().fg(get_theme_color("THEME_TEXT_FG_SELECTED", ROSE_PINE_TEXT))
+            Style::default().fg(get_theme_color("THEME_TEXT_FG_SELECTED", Color::Reset))
         } else {
-            Style::default().fg(get_theme_color("THEME_TEXT_FG", ROSE_PINE_SUBTLE))
+            Style::default().fg(get_theme_color("THEME_TEXT_FG", CUSTOM_GRAY))
         };
 
         let display_name = match app.matched_preset.as_ref() {
@@ -464,7 +460,7 @@ fn draw_now_playing_view(frame: &mut Frame, area: Rect, app: &App) {
             Title::from(Span::styled(
                 display_name,
                 get_text_view_style(app, view)
-                    .fg(get_theme_color("THEME_SUBTITLE_FG", ROSE_PINE_MUTED)),
+                    .fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
             ))
             .alignment(Alignment::Right),
         );
@@ -611,10 +607,10 @@ fn draw_progress_gauge(
     let style = if app.get_selected_view() == view {
         Style::default().fg(get_theme_color(
             "THEME_GAUGE_LABEL_FG_SELECTED",
-            ROSE_PINE_TEXT,
+            Color::Reset,
         ))
     } else {
-        Style::default().fg(get_theme_color("THEME_GAUGE_LABEL_FG", ROSE_PINE_SUBTLE))
+        Style::default().fg(get_theme_color("THEME_GAUGE_LABEL_FG", CUSTOM_GRAY))
     };
 
     let gauge = Gauge::default()
@@ -624,7 +620,7 @@ fn draw_progress_gauge(
             top: 0,
             bottom: 1,
         }))
-        .style(Style::default().bg(get_theme_color("THEME_NOW_PLAYING_BG", ROSE_PINE_OVERLAY)))
+        .style(Style::default().bg(get_theme_color("THEME_NOW_PLAYING_BG", Color::Reset)))
         .gauge_style(get_gauge_view_style(app, view))
         .percent(progress as u16)
         .label(Span::styled(label, style.add_modifier(Modifier::BOLD)));
@@ -736,7 +732,7 @@ fn draw_prompt_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let prompt = app.prompt.as_str();
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view))
+        .border_style(get_border_view_style(&app, view, "", ""))
         .title(Span::styled(prompt, get_text_view_style(&app, view)))
         .title_alignment(Alignment::Left);
 
@@ -767,7 +763,7 @@ fn draw_zones_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Zones);
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view))
+        .border_style(get_border_view_style(&app, view, "", ""))
         .title(Span::styled("Zones", get_text_view_style(&app, view)))
         .title_alignment(Alignment::Left);
 
@@ -835,7 +831,7 @@ fn draw_grouping_view(frame: &mut Frame, area: Rect, app: &mut App) -> Option<()
     };
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(app, Some(&view)));
+        .border_style(get_border_view_style(app, Some(&view), "", ""));
     let area = bottom_right_rect(50, 50, area);
     let vchunks = Layout::default()
         .direction(Direction::Vertical)
@@ -951,7 +947,7 @@ fn draw_help_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Help);
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view))
+        .border_style(get_border_view_style(&app, view, "", ""))
         .title(Span::styled("Help", get_text_view_style(&app, view)))
         .title_alignment(Alignment::Left);
     let chunk = Layout::default()
@@ -1074,25 +1070,44 @@ fn create_paragraph<'a>(text: &'a [&str]) -> Paragraph<'a> {
     Paragraph::new(lines).block(block)
 }
 
-fn get_border_view_style(app: &App, view: Option<&View>) -> Style {
+fn get_border_view_style(
+    app: &App,
+    view: Option<&View>,
+    default_theme_key: &str,
+    selected_theme_key: &str,
+) -> Style {
     let mut style = Style::default();
+
+    // set default theme color if default_theme_key is provided
+    // otherwise use CUSTOM_GRAY
+    let border_color = if default_theme_key.is_empty() {
+        CUSTOM_GRAY
+    } else {
+        get_theme_color(default_theme_key, CUSTOM_GRAY)
+    };
+
+    let border_selected_color = if selected_theme_key.is_empty() {
+        ROON_BRAND_COLOR
+    } else {
+        get_theme_color(selected_theme_key, ROON_BRAND_COLOR)
+    };
 
     if let Some(selected_view) = app.get_selected_view() {
         if let Some(view) = view {
             if *selected_view == *view {
-                style = style.fg(ROSE_PINE_BASE);
+                style = style.fg(border_selected_color);
             } else {
-                style = style.fg(ROSE_PINE_BASE);
+                style = style.fg(border_color);
             }
         }
     } else if view.is_none() {
-        style = style.fg(ROSE_PINE_BASE);
+        style = style.fg(border_color);
     } else {
-        style = style.fg(ROSE_PINE_BASE);
+        style = style.fg(border_color);
     }
 
     if view.is_none() {
-        style = style.fg(ROSE_PINE_BASE);
+        style = style.fg(border_color);
     }
 
     style
@@ -1115,17 +1130,17 @@ fn get_browse_title_style(app: &App) -> Style {
         style = style
             .fg(get_theme_color(
                 "THEME_BROWSE_TITLE_FG_SELECTED",
-                ROSE_PINE_BASE,
+                Color::Reset,
             ))
             .bg(get_theme_color(
                 "THEME_BROWSE_TITLE_BG_SELECTED",
-                ROSE_PINE_LOVE,
+                Color::Reset,
             ))
             .add_modifier(Modifier::BOLD);
     } else {
         style = style
-            .fg(get_theme_color("THEME_BROWSE_TITLE_FG", ROSE_PINE_LOVE))
-            .bg(get_theme_color("THEME_BROWSE_TITLE_BG", ROSE_PINE_LOVE_BG));
+            .fg(get_theme_color("THEME_BROWSE_TITLE_FG", CUSTOM_GRAY))
+            .bg(get_theme_color("THEME_BROWSE_TITLE_BG", Color::Reset));
     }
 
     style
@@ -1138,17 +1153,17 @@ fn get_queue_title_style(app: &App) -> Style {
         style = style
             .fg(get_theme_color(
                 "THEME_QUEUE_TITLE_FG_SELECTED",
-                ROSE_PINE_BASE,
+                Color::Reset,
             ))
             .bg(get_theme_color(
                 "THEME_QUEUE_TITLE_BG_SELECTED",
-                ROSE_PINE_ROSE,
+                Color::Reset,
             ))
             .add_modifier(Modifier::BOLD);
     } else {
         style = style
-            .fg(get_theme_color("THEME_QUEUE_TITLE_FG", ROSE_PINE_ROSE))
-            .bg(get_theme_color("THEME_QUEUE_TITLE_BG", ROSE_PINE_ROSE_BG));
+            .fg(get_theme_color("THEME_QUEUE_TITLE_FG", CUSTOM_GRAY))
+            .bg(get_theme_color("THEME_QUEUE_TITLE_BG", Color::Reset));
     }
 
     style
@@ -1161,76 +1176,67 @@ fn get_playing_title_style(app: &App) -> Style {
         style = style
             .fg(get_theme_color(
                 "THEME_NOW_PLAYING_TITLE_FG_SELECTED",
-                ROSE_PINE_BASE,
+                Color::Reset,
             ))
             .bg(get_theme_color(
                 "THEME_NOW_PLAYING_TITLE_BG_SELECTED",
-                ROSE_PINE_IRIS,
+                Color::Reset,
             ))
             .add_modifier(Modifier::BOLD);
     } else {
         style = style
-            .fg(get_theme_color(
-                "THEME_NOW_PLAYING_TITLE_FG",
-                ROSE_PINE_IRIS,
-            ))
-            .bg(get_theme_color(
-                "THEME_NOW_PLAYING_TITLE_BG",
-                ROSE_PINE_IRIS_BG,
-            ));
+            .fg(get_theme_color("THEME_NOW_PLAYING_TITLE_FG", CUSTOM_GRAY))
+            .bg(get_theme_color("THEME_NOW_PLAYING_TITLE_BG", Color::Reset));
     }
 
     style
 }
 
 fn get_text_view_style(app: &App, view: Option<&View>) -> Style {
-    let mut style = Style::default().fg(get_theme_color("THEME_TEXT_FG", ROSE_PINE_SUBTLE));
+    let mut style = Style::default().fg(get_theme_color("THEME_TEXT_FG", CUSTOM_GRAY));
 
     if let Some(selected_view) = app.get_selected_view() {
         if let Some(view) = view {
             if *selected_view == *view {
                 // style = style.fg(Color::Reset).add_modifier(Modifier::BOLD);
                 style = style
-                    .fg(get_theme_color("THEME_TEXT_FG_SELECTED", ROSE_PINE_TEXT))
+                    .fg(get_theme_color("THEME_TEXT_FG_SELECTED", Color::Reset))
                     .add_modifier(Modifier::BOLD);
             }
         }
     } else if view.is_none() {
         style = style
-            .fg(get_theme_color("THEME_TEXT_FG", ROSE_PINE_SUBTLE))
+            .fg(get_theme_color("THEME_TEXT_FG", CUSTOM_GRAY))
             .add_modifier(Modifier::BOLD);
     } else {
-        style = style.fg(get_theme_color("THEME_TEXT_FG", ROSE_PINE_SUBTLE));
+        style = style.fg(get_theme_color("THEME_TEXT_FG", CUSTOM_GRAY));
     }
 
     if view.is_none() {
         style = style
-            .fg(get_theme_color("THEME_TITLE_FG", ROSE_PINE_FOAM))
-            .bg(get_theme_color("THEME_TITLE_BG", ROSE_PINE_FOAM_BG));
+            .fg(get_theme_color("THEME_TITLE_FG", CUSTOM_GRAY))
+            .bg(get_theme_color("THEME_TITLE_BG", Color::Reset));
     }
 
     style
 }
 
 fn get_gauge_view_style(app: &App, view: Option<&View>) -> Style {
-    let mut style = Style::default().bg(get_theme_color("THEME_GAUGE_BG", ROSE_PINE_SURFACE));
+    let mut style = Style::default().bg(get_theme_color(
+        "THEME_GAUGE_BG",
+        Color::Rgb(0x30, 0x30, 0x30),
+    ));
 
     if let Some(selected_view) = app.get_selected_view() {
         if let Some(view) = view {
             if *selected_view == *view {
-                style = style.fg(get_theme_color(
-                    "THEME_GAUGE_FG_SELECTED",
-                    ROSE_PINE_HIGHLIGHT_HIGH,
-                ));
+                style = style.fg(get_theme_color("THEME_GAUGE_FG_SELECTED", ROON_BRAND_COLOR));
             } else {
-                style = style.fg(get_theme_color(
-                    "THEME_GAUGE_FG",
-                    ROSE_PINE_HIGHLIGHT_MEDIUM,
-                ));
+                style = style.fg(get_theme_color("THEME_GAUGE_FG", CUSTOM_GRAY));
             }
         }
     } else if view.is_some() {
-        style = style.fg(Color::Red);
+        style = style.fg(Color::Rgb(0x30, 0x30, 0x30));
     }
 
     style
