@@ -205,8 +205,8 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
             "THEME_BROWSE_BORDER",
             "THEME_BROWSE_BORDER_SELECTED",
         ))
-        .title(Span::styled(browse_title, get_browse_title_style(&app)))
-        .style(Style::default().bg(get_theme_color("THEME_BROWSE_BG", Color::Reset))); // Apply background color to main block;
+        .title(Span::styled(browse_title, get_browse_title_style(&app)));
+    // .style(Style::default().bg(get_theme_color("THEME_BROWSE_BG", Color::Reset))); // Apply background color to main block;
 
     app.browse.prepare_paging(
         page_lines,
@@ -251,7 +251,7 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
             .block(Block::default().borders(Borders::ALL))
             .highlight_style(
                 Style::default()
-                    .bg(ROON_BRAND_COLOR)
+                    .bg(get_theme_color("THEME_HIGHLIGHT", ROON_BRAND_COLOR))
                     .add_modifier(Modifier::BOLD),
             )
             .highlight_symbol(highlight_symbol)
@@ -264,12 +264,13 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
             let len = browse_items.len();
 
             if len > 0 {
-                let progress = format!("{}/{}", app.browse.state.selected().unwrap() + 1, len);
+                let progress = format!(" {}/{} ", app.browse.state.selected().unwrap() + 1, len);
 
                 block = block.title(
                     Title::from(Span::styled(
                         progress,
-                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
+                        Style::default()
+                            .fg(get_theme_color("THEME_BROWSE_BORDER_SELECTED", CUSTOM_GRAY)),
                     )) // meta
                     .alignment(Alignment::Right),
                 );
@@ -371,7 +372,7 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
         let list = List::new(items)
             .block(Block::default().borders(Borders::ALL))
             .highlight_style(
-                Style::default()
+                Style::new()
                     .bg(ROON_BRAND_COLOR)
                     .add_modifier(Modifier::BOLD),
             )
@@ -385,12 +386,13 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
             let len = queue_items.len();
 
             if len > 0 {
-                let progress = format!("{}/{}", app.queue.state.selected().unwrap() + 1, len);
+                let progress = format!(" {}/{} ", app.queue.state.selected().unwrap() + 1, len);
 
                 block = block.title(
                     Title::from(Span::styled(
                         progress,
-                        Style::default().fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
+                        Style::default()
+                            .fg(get_theme_color("THEME_QUEUE_BORDER_SELECTED", CUSTOM_GRAY)),
                     ))
                     .alignment(Alignment::Left),
                 );
@@ -453,14 +455,21 @@ fn draw_now_playing_view(frame: &mut Frame, area: Rect, app: &App) {
 
         let display_name = match app.matched_preset.as_ref() {
             Some(preset) => format!("{} ({})", preset.as_str(), zone.display_name),
-            None => zone.display_name.to_owned(),
+            None => format!(" {} ", zone.display_name.to_owned()),
+        };
+
+        // create a variable for the theme key, if this view is selected use THEME_NOW_PLAYING_TITLE_FG
+        // else use THEME_TEXT_FG
+        let title_fg = if is_selected_view(app, view) {
+            "THEME_NOW_PLAYING_BORDER_SELECTED"
+        } else {
+            "THEME_TEXT_FG"
         };
 
         block = block.title(
             Title::from(Span::styled(
                 display_name,
-                get_text_view_style(app, view)
-                    .fg(get_theme_color("THEME_SUBTITLE_FG", CUSTOM_GRAY)),
+                get_text_view_style(app, view).fg(get_theme_color(title_fg, CUSTOM_GRAY)),
             ))
             .alignment(Alignment::Right),
         );
@@ -651,7 +660,10 @@ fn get_queue_time_remaining(app: &App) -> Option<String> {
     };
 
     if queue_time_remaining > 0 && now_playing.length.is_some() {
-        Some(get_time_string(queue_time_remaining as u32))
+        Some(format!(
+            " {} ",
+            get_time_string(queue_time_remaining as u32)
+        ))
     } else {
         None
     }
@@ -947,8 +959,19 @@ fn draw_help_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Help);
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view, "", ""))
-        .title(Span::styled("Help", get_text_view_style(&app, view)))
+        .border_style(get_border_view_style(
+            &app,
+            view,
+            "THEME_HELP_BORDER",
+            "THEME_HELP_BORDER",
+        ))
+        .style(Style::default().bg(get_theme_color("THEME_HELP_BG", Color::Reset))) // Apply background color to main block;
+        .title(Span::styled(
+            " Help ",
+            get_text_view_style(&app, view)
+                .fg(get_theme_color("THEME_HELP_TITLE_FG", CUSTOM_GRAY))
+                .bg(get_theme_color("THEME_HELP_TITLE_BG", Color::Reset)),
+        ))
         .title_alignment(Alignment::Left);
     let chunk = Layout::default()
         .direction(Direction::Horizontal)
@@ -1053,7 +1076,7 @@ fn create_paragraph<'a>(text: &'a [&str]) -> Paragraph<'a> {
         top: 1,
         bottom: 0,
     });
-    let style = Style::default().fg(Color::Reset);
+    let style = Style::default().fg(get_theme_color("THEME_TEXT_FG_SELECTED", Color::Reset));
     let mut lines = Vec::new();
 
     for line in text {
