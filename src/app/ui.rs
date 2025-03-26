@@ -846,9 +846,24 @@ fn draw_grouping_view(frame: &mut Frame, area: Rect, app: &mut App) -> Option<()
     } else {
         View::Grouping
     };
+    let background_color = get_theme_color("THEME_GROUP_BG", Color::Reset);
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(app, Some(&view), "", ""));
+        .border_style(get_border_view_style(
+            app,
+            Some(&view),
+            "",
+            "THEME_ZONES_BORDER",
+        ))
+        .title(Span::styled(
+            " Grouping ",
+            get_text_view_style(&app, None)
+                .fg(get_theme_color("THEME_ZONES_TITLE_FG", CUSTOM_GRAY))
+                .bg(get_theme_color("THEME_ZONES_TITLE_BG", Color::Reset)),
+        ))
+        .title_alignment(Alignment::Left);
+    // .style(Style::default().bg(background_color));
+
     let area = bottom_right_rect(50, 50, area);
     let vchunks = Layout::default()
         .direction(Direction::Vertical)
@@ -864,6 +879,9 @@ fn draw_grouping_view(frame: &mut Frame, area: Rect, app: &mut App) -> Option<()
     );
 
     frame.render_widget(Clear, area); // This clears out the background
+
+    let background = Block::default().style(Style::default().bg(background_color));
+    frame.render_widget(background, area);
 
     if view == View::GroupingPreset {
         let max_len = vchunks[0].width.saturating_sub(1) as usize;
@@ -949,7 +967,7 @@ fn draw_grouping_view(frame: &mut Frame, area: Rect, app: &mut App) -> Option<()
     // Create a List from all list items and highlight the currently selected one
     let list = List::new(items).block(Block::default()).highlight_style(
         Style::default()
-            .bg(ROON_BRAND_COLOR)
+            .bg(get_theme_color("THEME_ZONES_HIGHLIGHT", ROON_BRAND_COLOR))
             .add_modifier(Modifier::BOLD),
     );
 

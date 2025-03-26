@@ -874,6 +874,8 @@ impl App {
 
     async fn handle_grouping_key_codes(&mut self, key: KeyEvent) -> Option<()> {
         match key.code {
+            KeyCode::Char('j') => self.grouping.next(),
+            KeyCode::Char('k') => self.grouping.prev(),
             KeyCode::Up => self.grouping.prev(),
             KeyCode::Down => self.grouping.next(),
             KeyCode::Home => self.grouping.select_first(),
