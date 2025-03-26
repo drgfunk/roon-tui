@@ -148,7 +148,7 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
         " No Roon Server paired/found ".to_owned()
     };
     let hint = Title::from(Span::styled(
-        " Ctrl-h for Help ",
+        " ? for Help ",
         Style::default().fg(get_theme_color("THEME_HINT_FG", CUSTOM_GRAY)),
     ))
     .position(Position::Bottom)
@@ -775,15 +775,20 @@ fn draw_zones_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Zones);
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(get_border_view_style(&app, view, "", ""))
-        .title(Span::styled("Zones", get_text_view_style(&app, view)))
+        .border_style(get_border_view_style(&app, view, "", "THEME_ZONES_BORDER"))
+        .title(Span::styled(
+            " Zones ",
+            get_text_view_style(&app, view)
+                .fg(get_theme_color("THEME_ZONES_TITLE_FG", CUSTOM_GRAY))
+                .bg(get_theme_color("THEME_ZONES_TITLE_BG", Color::Reset)),
+        ))
         .title_alignment(Alignment::Left);
 
     let area = bottom_right_rect(50, 50, area);
     let page_lines = area.height.saturating_sub(2) as usize; // Exclude border
 
     // Define a background color for the zones view
-    let background_color = Color::Rgb(0x20, 0x20, 0x30); // Dark blue-purple background
+    let background_color = get_theme_color("THEME_ZONES_BG", Color::Reset);
 
     frame.render_widget(Clear, area); // This clears out the background
 
@@ -822,7 +827,7 @@ fn draw_zones_view(frame: &mut Frame, area: Rect, app: &mut App) {
             )
             .highlight_style(
                 Style::default()
-                    .bg(ROON_BRAND_COLOR)
+                    .bg(get_theme_color("THEME_ZONES_HIGHLIGHT", ROON_BRAND_COLOR))
                     .add_modifier(Modifier::BOLD),
             )
             .style(Style::default().bg(background_color)) // Apply background to the list itself
