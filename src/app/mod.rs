@@ -688,6 +688,7 @@ impl App {
                 }
             }
             KeyModifiers::SHIFT => match key.code {
+                KeyCode::Char('G') => self.browse.select_last(),
                 KeyCode::Char(key) => self.select_by_input(key),
                 _ => (),
             },
@@ -755,7 +756,9 @@ impl App {
                 .send(IoEvent::Mute(volume::Mute::Unmute))
                 .await
                 .unwrap(),
-            KeyCode::Char('+') | KeyCode::Char('=') => self.to_roon.send(IoEvent::ChangeVolume(1)).await.unwrap(),
+            KeyCode::Char('+') | KeyCode::Char('=') => {
+                self.to_roon.send(IoEvent::ChangeVolume(1)).await.unwrap()
+            }
             KeyCode::Char('-') => self.to_roon.send(IoEvent::ChangeVolume(-1)).await.unwrap(),
             KeyCode::Char('r') => self.to_roon.send(IoEvent::Repeat).await.unwrap(),
             KeyCode::Char('s') => self.to_roon.send(IoEvent::Shuffle).await.unwrap(),
@@ -836,6 +839,8 @@ impl App {
 
     async fn handle_zone_key_codes(&mut self, key: KeyEvent) {
         match key.code {
+            KeyCode::Char('j') => self.zones.next(),
+            KeyCode::Char('k') => self.zones.prev(),
             KeyCode::Up => self.zones.prev(),
             KeyCode::Down => self.zones.next(),
             KeyCode::Home => self.zones.select_first(),
@@ -869,6 +874,8 @@ impl App {
 
     async fn handle_grouping_key_codes(&mut self, key: KeyEvent) -> Option<()> {
         match key.code {
+            KeyCode::Char('j') => self.grouping.next(),
+            KeyCode::Char('k') => self.grouping.prev(),
             KeyCode::Up => self.grouping.prev(),
             KeyCode::Down => self.grouping.next(),
             KeyCode::Home => self.grouping.select_first(),
