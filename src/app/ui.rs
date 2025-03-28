@@ -34,8 +34,18 @@ mod theme {
     }
 
     impl ThemeColors {
+        // Get system theme (light or dark)
+        pub fn get_system_theme() -> String {
+            match dark_light::detect() {
+                dark_light::Mode::Dark => "dark".to_string(),
+                dark_light::Mode::Light | dark_light::Mode::Default => "light".to_string(),
+            }
+        }
+
         pub fn get_theme_path() -> PathBuf {
             println!("Searching for theme file...");
+            let theme_mode = Self::get_system_theme();
+            let theme_filename = format!("{}-theme.yml", theme_mode);
 
             // First check XDG_DATA_HOME/roon-tui/theme.yml
             if let Some(data_dir) = dirs::data_dir() {
@@ -54,7 +64,7 @@ mod theme {
             }
 
             // Finally, check the current directory
-            let local_path = PathBuf::from("theme.yml");
+            let local_path = PathBuf::from(theme_filename);
             if local_path.exists() {
                 return local_path;
             }
@@ -199,6 +209,7 @@ fn draw_browse_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Browse);
     let mut block = Block::default()
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(get_border_view_style(
             &app,
             view,
@@ -299,6 +310,7 @@ fn draw_queue_view(frame: &mut Frame, area: Rect, app: &mut App) {
     let view = Some(&View::Queue);
     let mut block = Block::default()
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(get_border_view_style(
             &app,
             view,
@@ -419,6 +431,7 @@ fn draw_now_playing_view(frame: &mut Frame, area: Rect, app: &App) {
 
     let mut block = Block::default()
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(get_border_view_style(
             app,
             view,
