@@ -866,13 +866,13 @@ fn draw_grouping_view(frame: &mut Frame, area: Rect, app: &mut App) -> Option<()
             app,
             Some(&view),
             "",
-            "THEME_ZONES_BORDER",
+            "THEME_GROUP_BORDER",
         ))
         .title(Span::styled(
             " Grouping ",
             get_text_view_style(&app, None)
-                .fg(get_theme_color("THEME_ZONES_TITLE_FG", CUSTOM_GRAY))
-                .bg(get_theme_color("THEME_ZONES_TITLE_BG", Color::Reset)),
+                .fg(get_theme_color("THEME_GROUP_TITLE_FG", CUSTOM_GRAY))
+                .bg(get_theme_color("THEME_GROUP_TITLE_BG", Color::Reset)),
         ))
         .title_alignment(Alignment::Left);
     // .style(Style::default().bg(background_color));
